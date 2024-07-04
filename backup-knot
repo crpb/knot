@@ -1,0 +1,32 @@
+#!/bin/bash
+# shellcheck disable=SC2174
+set -o nounset
+#
+# Copyright © 2024 Christopher Bock <christopher@bocki.com>
+# SPDX-License-Identifier: MIT
+#
+BASE_BAK=/var/backups/knot/
+BAK="$BASE_BAK/$(date -Im)"
+DAYS=62
+mkdir -p -m 0750 "$BASE_BAK"
+mkdir -p -m 0750 "$BAK"
+tar -czf "$BAK/etc_knot.tgz" -P /etc/knot
+chown -Rf knot:knot "$BASE_BAK"
+knotc -x zone-status|awk -F'[][]' '{print$2}'| sed 's/.$//g' | while read -r zone
+do
+  su --command "mkdir --mode 0750 -p $BAK/$zone" --shell /bin/sh knot
+  {
+    knotc --blocking zone-freeze "$zone"
+    knotc --blocking zone-flush "$zone"
+    if knotc --blocking zone-backup "$zone" +backupdir "$BAK/$zone"; then
+      if ! test -e "$BAK/$zone/knot_backup.label"; then 
+        {
+          echo "Failed backup of zone: $zone"
+          journalctl --since -5s --grep "$zone"
+        } >/dev/stderr
+      fi
+    fi
+    knotc --blocking zone-thaw "$zone"
+  } >/dev/null
+done
+su --command "find $BASE_BAK -maxdepth 1 -mindepth 1 -type d -mtime +$DAYS -exec rm -rf '{}' +" --shell /bin/sh knot
