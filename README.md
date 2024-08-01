@@ -1,7 +1,7 @@
 # knot
 Scripts and more for Knot DNS
 
-## knot-backup
+## backup-knot
 Backup the contents of `/etc/knot` and all zones.
 
 ## zoneedit.bash
