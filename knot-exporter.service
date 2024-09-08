@@ -1,0 +1,61 @@
+# /etc/systemd/system/knot-exporter.service
+# It doesn't like restarts w/o a knot restart
+[Unit]
+Description=Knot DNS Statistics
+Wants=knot.service
+After=knot.service
+
+[Install]
+WantedBy=multi-user.target
+
+# Security lockdown. At least we try..
+[Service]
+EnvironmentFile=/etc/default/knot
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_SETPCAP
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_SETPCAP
+ExecStart=/usr/sbin/knot-exporter/knot-exporter
+Restart=always
+#LimitNOFILE=1048576
+TimeoutStopSec=300
+# Extend the systemd startup timeout by this value (seconds) for each zone
+Environment="KNOT_ZONE_LOAD_TIMEOUT_SEC=180"
+# Maximum size (MiB) of a configuration database
+Environment="KNOT_CONF_MAX_SIZE=512"
+# Expected systemd >= v239
+RuntimeDirectory=knot
+#StateDirectory=knot
+NoNewPrivileges=yes
+
+#CacheDirectory=%p
+#CapabilityBoundingSet=
+#DevicePolicy=closed
+#DynamicUser=no
+#ExecStart=/usr/sbin/%N/%N
+#IPAddressDeny=any
+#LockPersonality=yes
+#MemoryDenyWriteExecute=yes
+#PrivateDevices=yes
+#PrivateNetwork=yes
+#ProcSubset=pid
+#ProtectClock=yes
+#ProtectControlGroups=yes
+#ProtectProc=invisible
+#RestrictNamespaces=yes
+#SystemCallFilter=@system-service
+#SystemCallFilter=~@privileged @resources
+Group=knot
+IPAddressAllow=localhost
+IPAddressDeny=any
+PrivateUsers=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
+ReadOnlyPaths=/
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictRealtime=yes
+SystemCallArchitectures=native
+UMask=0077
+User=knot
