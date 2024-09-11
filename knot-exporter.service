@@ -13,14 +13,9 @@ WantedBy=multi-user.target
 EnvironmentFile=/etc/default/knot
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_SETPCAP
 AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_SETPCAP
-ExecStart=/usr/sbin/knot-exporter/knot-exporter
-Restart=always
+ExecStart=/usr/sbin/knot-exporter
+Restart=on-failure
 #LimitNOFILE=1048576
-TimeoutStopSec=300
-# Extend the systemd startup timeout by this value (seconds) for each zone
-Environment="KNOT_ZONE_LOAD_TIMEOUT_SEC=180"
-# Maximum size (MiB) of a configuration database
-Environment="KNOT_CONF_MAX_SIZE=512"
 # Expected systemd >= v239
 RuntimeDirectory=knot
 #StateDirectory=knot
